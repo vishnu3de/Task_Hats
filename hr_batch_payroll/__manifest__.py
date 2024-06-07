@@ -20,7 +20,7 @@
 
     # always loaded
     'data': [
-
+        'data/data.xml',
         'views/templates.xml',
     ],
 
