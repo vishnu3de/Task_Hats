@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from odoo import models, fields, api
-from odoo.exceptions import ValidationError
+from odoo.exceptions import ValidationError,UserError
 import calendar
 from datetime import datetime
 
@@ -113,11 +113,10 @@ class HrPayslip(models.Model):
             ('contract_id', '=', self.contract_id.id)
         ])
         if existing_payslip:
-            raise ValidationError(
+            raise UserError(
                 'A payslip with the same employee(s), date range, and contract already exists.' + existing_payslip.employee_id.name)
     @api.model
     def create(self, vals):
-        print(vals)
         active_id = self.env.context.get('active_id', False)
         payslip_id = self.env['hr.payslip.run'].search([('id', '=', active_id)])
         existing_payslip = self.search([
