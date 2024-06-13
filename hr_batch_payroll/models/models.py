@@ -91,9 +91,7 @@ class HrPayslipEmployees(models.TransientModel):
         department_id = self.env['hr.employee'].search([
             ('department_id', '=', payslip_id.department_id.id),
             ('contract_id', '!=', False),
-            ('contract_id.state', '=', 'open'),
-            ('contract_id.date_start','<=',payslip_id.date_start),
-            ('contract_id.date_end','>=', payslip_id.date_end),
+            ('contract_id.state', '=', 'open')
         ])
 
         res = super(HrPayslipEmployees, self).default_get(fields)
@@ -104,20 +102,8 @@ class HrPayslipEmployees(models.TransientModel):
 class HrPayslip(models.Model):
     _inherit = 'hr.payslip'
 
-    @api.onchange('payslip_run_id')
-    def onchange_payslip_run_id(self):
-        existing_payslip = self.env['hr.payslip'].search([
-            ('employee_id', '=', self.employee_id.id),
-            ('date_from', '=', self.payslip_run_id.date_start),
-            ('date_to', '=', self.payslip_run_id.date_end),
-            ('contract_id', '=', self.contract_id.id)
-        ])
-        if existing_payslip:
-            raise ValidationError(
-                'A payslip with the same employee(s), date range, and contract already exists.' + existing_payslip.employee_id.name)
     @api.model
     def create(self, vals):
-        print(vals)
         active_id = self.env.context.get('active_id', False)
         payslip_id = self.env['hr.payslip.run'].search([('id', '=', active_id)])
         existing_payslip = self.search([
@@ -127,6 +113,6 @@ class HrPayslip(models.Model):
             ('contract_id', '=', vals.get('contract_id'))
         ])
         if existing_payslip:
-            raise ValidationError('A payslip with the same employee(s), date range, and contract already exists.'+existing_payslip.employee_id.name)
+            raise ValidationError('A payslip with the same employee, date range, and contract already exists.')
 
         return super(HrPayslip, self).create(vals)
