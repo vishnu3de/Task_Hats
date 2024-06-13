@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from odoo import models, fields, api
-from odoo.exceptions import ValidationError
+from odoo.exceptions import ValidationError,UserError
 import calendar
 from datetime import datetime
 
@@ -101,6 +101,19 @@ class HrPayslipEmployees(models.TransientModel):
 
 class HrPayslip(models.Model):
     _inherit = 'hr.payslip'
+
+
+    @api.onchange('payslip_run_id')
+    def onchange_payslip_run_id(self):
+        existing_payslip = self.env['hr.payslip'].search([
+            ('employee_id', '=', self.employee_id.id),
+            ('date_from', '=', self.payslip_run_id.date_start),
+            ('date_to', '=', self.payslip_run_id.date_end),
+            ('contract_id', '=', self.contract_id.id)
+        ])
+        if existing_payslip:
+            raise UserError(
+                'A payslip with the same employee(s), date range, and contract already exists.' + existing_payslip.employee_id.name)
 
     @api.model
     def create(self, vals):
